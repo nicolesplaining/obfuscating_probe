@@ -4,6 +4,8 @@ Train probes to predict future tokens from language model activations.
 
 ## Quick Start
 
+**Note:** All commands should be run from the repository root directory.
+
 ```bash
 # 0. Check model (optional but recommended)
 python -m look_ahead_probe.check_model \

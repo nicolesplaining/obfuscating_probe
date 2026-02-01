@@ -1,10 +1,11 @@
 #!/bin/bash
 # Test the refactored workflow
+# Run from project root: bash scripts/test_run.sh
 
 set -e
 
 MODEL="meta-llama/Llama-3.2-1B-Instruct"
-DATASET="../data/example_dataset.jsonl"
+DATASET="data/example_dataset.jsonl"
 MAX_K=3
 
 echo "Testing refactored workflow with max_k=${MAX_K}"
@@ -35,7 +36,7 @@ echo "2. Training probe on layer 6, k=2..."
 python -m look_ahead_probe.main \
     --train_dataset test_datasets/train.pt \
     --layer 6 \
-    --k 2 \
+    --k 3 \
     --probe_type linear \
     --num_epochs 1 \
     --batch_size 10 \
