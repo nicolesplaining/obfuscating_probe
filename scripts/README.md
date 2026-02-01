@@ -4,30 +4,77 @@ Helper scripts for experiments and testing.
 
 ## Available Scripts
 
-### `run_layer_k_experiment.sh`
-**Purpose:** Comprehensive layer-k probing experiment
+### `layer_k_experiment.py` ⭐
+**Purpose:** End-to-end layer-k probing experiment pipeline
 
 **What it does:**
-1. Builds activation dataset for all layers with k=1,2,3
-2. Trains MLP probes for each (layer, k) combination
-3. Generates results table showing accuracy across all configurations
+Orchestrates the 3-step pipeline:
+1. **Check model** - Verify compatibility (`check_model.py`)
+2. **Build datasets** - Extract train (and optional val) activations
+3. **Train & evaluate** - For all layers and k values (`train_all_layers.py`)
+   - Automatically evaluates on validation set if provided
+   - Saves results with train/val metrics to JSON
 
 **Usage:**
 ```bash
-cd scripts
-./run_layer_k_experiment.sh
+# With validation set
+python scripts/layer_k_experiment.py \
+    --model_name meta-llama/Llama-3.2-1B-Instruct \
+    --train_dataset_path data/train.jsonl \
+    --val_dataset_path data/val.jsonl \
+    --max_k 5 \
+    --probe_type mlp \
+    --num_epochs 10
+
+# Training only (no validation)
+python scripts/layer_k_experiment.py \
+    --model_name meta-llama/Llama-3.2-1B-Instruct \
+    --train_dataset_path data/example_dataset.jsonl \
+    --max_k 3 \
+    --skip_check
+```
+
+**JSONL format** (no split field needed):
+```jsonl
+{"text": "Your prompt text here"}
+{"text": "Another prompt"}
 ```
 
 **Output:**
-- `experiment_results/datasets/` - Extracted activations
-- `experiment_results/probes/` - Trained probe weights
-- `experiment_results/results_table.txt` - Results summary table
+```
+experiment_results/
+├── activations.pt              # Training activations
+├── val_activations.pt          # Validation activations (if provided)
+├── probes/                     # Trained probes
+│   ├── k1/
+│   ├── k2/
+│   └── k3/
+└── experiment_results.json     # Train & val results ⭐
+```
 
-**Customize:** Edit variables at top of script:
-- `MODEL` - Model to probe
-- `MAX_K` - Maximum lookahead distance
-- `NUM_EPOCHS` - Training epochs
-- `PROBE_TYPE` - "linear" or "mlp"
+**Key arguments:**
+- `--model_name` - Model to probe
+- `--train_dataset_path` - Training data (JSONL)
+- `--val_dataset_path` - Validation data (JSONL, optional)
+- `--max_k` - Maximum lookahead distance
+- `--probe_type` - "linear" or "mlp"
+- `--skip_check` - Skip model compatibility check
+
+### `run_layer_k_experiment.sh`
+**Purpose:** Quick pipeline test with small parameters
+
+**What it does:**
+Runs `layer_k_experiment.py` with small test parameters to verify the pipeline works
+
+**Usage:**
+```bash
+bash scripts/run_layer_k_experiment.sh
+```
+
+**Test parameters:**
+- 10 prompts, 20 tokens, k=1,2,3
+- Linear probe, 2 epochs
+- Fast execution (~5-10 minutes)
 
 ---
 
